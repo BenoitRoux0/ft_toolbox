@@ -11,7 +11,7 @@ import shutil
 
 parser = argparse.ArgumentParser(description='Jetbrains toolbox cli')
 
-parser.add_argument("action", choices=['list', 'search', 'infos', 'download', 'use'])
+parser.add_argument("action", choices=['list', 'search', 'infos', 'download', 'use', 'config'])
 parser.add_argument("ide", nargs='?', default='all')
 parser.add_argument("version", nargs='?', default="latest")
 parser.add_argument("cmd", nargs='?')
@@ -213,3 +213,9 @@ elif args.action == "download":
 elif args.action == "use":
     use(args.ide, args.version)
     generate_entry(args.ide, args.version)
+elif args.action == "config":
+    os.makedirs(".config/fttb")
+    os.makedirs(".cache/fttb")
+    os.makedirs("goinfre/ides/fttb")
+    download_file("https://gist.githubusercontent.com/BenoitRoux0/16b18e10cfd53dcf31a28cb1b38e4303/raw/85e83c6f716fb1ccba39cb88520d0c03f54d9f3e/config.json", ".config/fttb/config.json")
+
