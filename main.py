@@ -25,9 +25,13 @@ def open_config(path):
     return conf
 
 
-config_fttb = open_config(".config/fttb/config.json")
 args = parser.parse_args()
 
+try:
+    config_fttb = open_config(".config/fttb/config.json")
+except FileNotFoundError:
+    if args.action != "config":
+        print("run with config firstly")
 
 def get_code(name, config_fttp: dict):
     print(config_fttp['aliases'])
