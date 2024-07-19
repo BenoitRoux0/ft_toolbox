@@ -11,10 +11,12 @@ import shutil
 
 parser = argparse.ArgumentParser(description='Jetbrains toolbox cli')
 
-parser.add_argument("action")
+parser.add_argument("action", choices=['list', 'search', 'infos', 'download', 'use'])
 parser.add_argument("ide", nargs='?', default='all')
 parser.add_argument("version", nargs='?', default="latest")
 parser.add_argument("cmd", nargs='?')
+
+os.chdir(os.environ.get("HOME", "./"))
 
 
 def open_config(path):
@@ -23,7 +25,7 @@ def open_config(path):
     return conf
 
 
-config_fttb = open_config("/home/beroux/.config/fttb/config.json")
+config_fttb = open_config(".config/fttb/config.json")
 args = parser.parse_args()
 
 
@@ -127,6 +129,17 @@ def infos(ide):
     print(f"{ide['name']}\ncode: {ide['intellijProductCode']}\n{ide['description']}\n")
 
 
+def get_latest(ide):
+    res = requests.get(
+        f"https://data.services.jetbrains.com/products/releases?code={ide}")
+    if not res.ok:
+        print("request failed")
+        sys.exit()
+
+    releases = res.json()[ide]
+    return releases[0]['version']
+
+
 def download(ide, version, config_fttp: dict):
     if ide == "all":
         print("invalid IDE code")
@@ -146,13 +159,16 @@ def download(ide, version, config_fttp: dict):
         if release['version'] == version:
             print(release['downloads']['linux'])
             filename = release['downloads']['linux']['link'].split("/")[-1]
-            filepath = f"/home/beroux/.cache/fttb/{filename}"
+            filepath = f".cache/fttb/{filename}"
             download_file(release['downloads']['linux']['link'], filepath)
             file = tarfile.open(filepath)
-            file.extractall(path="/home/beroux/goinfre/ides/fttb/")
+            file.extractall(path="goinfre/ides/fttb/")
             dst = file.getmembers()[0].name.split('/')[0]
-            shutil.rmtree(f"/home/beroux/goinfre/ides/fttb/{ide}-{version}")
-            os.rename(f"/home/beroux/goinfre/ides/fttb/{dst}", f"/home/beroux/goinfre/ides/fttb/{ide}-{version}")
+            try:
+                shutil.rmtree(f"goinfre/ides/fttb/{ide}-{version}")
+            except FileNotFoundError:
+                pass
+            os.rename(f"goinfre/ides/fttb/{dst}", f"goinfre/ides/fttb/{ide}-{version}")
             return version
 
 
@@ -160,11 +176,30 @@ def use(ide, version):
     version = download(ide, version, config_fttb)
     print(version)
     try:
-        os.remove(f"/home/beroux/bin/{ide}")
+        os.remove(f"bin/{ide}")
     except FileNotFoundError:
         pass
     ide_code = get_code(ide, config_fttb)
-    os.symlink(f"/home/beroux/goinfre/ides/fttb/{ide_code}-{version}/bin/{ide}.sh", f"/home/beroux/bin/{ide}")
+    os.symlink(f"{os.getcwd()}/goinfre/ides/fttb/{ide_code}-{version}/bin/{ide}.sh", f"bin/{ide}")
+
+
+def generate_entry(ide, version):
+    ide_code = get_code(ide, config_fttb)
+    if version == "latest":
+        version = get_latest(ide_code)
+    res = requests.get(
+        f"https://data.services.jetbrains.com/products?code={ide_code}&fields=name,intellijProductCode,description,categories")
+    template_file_res = requests.get(
+        "https://gist.githubusercontent.com/BenoitRoux0/ece685d71749e9d52a1c03b09a5b6e74/raw/dd5bd0f2a2f24c157a26aa7c97121f883dd6eeef/template.desktop")
+    entry = template_file_res.content.decode()
+    entry = entry.replace("{name}", res.json()[0]['name'])
+    entry = entry.replace("{desc}", res.json()[0]['description'])
+    entry = entry.replace("{exec}", f"{os.getcwd()}/goinfre/ides/fttb/{ide_code}-{version}/bin/{ide}.sh %U")
+    entry = entry.replace("{icon}", f"{os.getcwd()}/goinfre/ides/fttb/{ide_code}-{version}/bin/{ide}.svg")
+    entry_file = open(f".local/share/applications/{ide}.desktop", "w+")
+    entry_file.write(entry)
+    entry_file.close()
+    print(res.json())
 
 
 if args.action == "list":
@@ -177,5 +212,4 @@ elif args.action == "download":
     download(args.ide, args.version, config_fttb)
 elif args.action == "use":
     use(args.ide, args.version)
-elif args.action.startswith("fttb://"):
-    print(args.action)
+    generate_entry(args.ide, args.version)
