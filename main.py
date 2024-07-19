@@ -219,6 +219,7 @@ elif args.action == "use":
     generate_entry(args.ide, args.version)
 elif args.action == "config":
     os.makedirs(".config/fttb")
+    os.makedirs("bin")
     os.makedirs(".cache/fttb")
     os.makedirs("goinfre/ides/fttb")
     download_file("https://gist.githubusercontent.com/BenoitRoux0/16b18e10cfd53dcf31a28cb1b38e4303/raw/85e83c6f716fb1ccba39cb88520d0c03f54d9f3e/config.json", ".config/fttb/config.json")
