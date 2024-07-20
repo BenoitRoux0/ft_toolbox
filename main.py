@@ -1,5 +1,4 @@
 #!/bin/python3.10
-import glob
 import os
 import sys
 
@@ -11,7 +10,7 @@ import shutil
 
 parser = argparse.ArgumentParser(description='Jetbrains toolbox cli')
 
-parser.add_argument("action", choices=['list', 'search', 'infos', 'download', 'use', 'config'])
+parser.add_argument("action", choices=['list', 'search', 'infos', 'download', 'use', 'config', 'clear'])
 parser.add_argument("ide", nargs='?', default='all')
 parser.add_argument("version", nargs='?', default="latest")
 parser.add_argument("cmd", nargs='?')
@@ -32,6 +31,7 @@ try:
 except FileNotFoundError:
     if args.action != "config":
         print("run with config firstly")
+
 
 def get_code(name, config_fttp: dict):
     print(config_fttp['aliases'])
@@ -155,10 +155,13 @@ def download(ide, version, config_fttp: dict):
         print("request failed")
         sys.exit()
 
+    print(res.json().keys())
     releases = res.json()[ide]
     if version == "latest":
         version = releases[0]['version']
 
+    if os.path.isdir(f"goinfre/ides/fttb/{ide}-{version}"):
+        return version
     for release in releases:
         if release['version'] == version:
             print(release['downloads']['linux'])
@@ -206,6 +209,28 @@ def generate_entry(ide, version):
     print(res.json())
 
 
+def create_config():
+    try:
+        os.makedirs(".config/fttb")
+    except FileExistsError:
+        pass
+    try:
+        os.makedirs("bin")
+    except FileExistsError:
+        pass
+    try:
+        os.makedirs(".cache/fttb")
+    except FileExistsError:
+        pass
+    try:
+        os.makedirs("goinfre/ides/fttb")
+    except FileExistsError:
+        pass
+    download_file(
+        "https://gist.githubusercontent.com/BenoitRoux0/16b18e10cfd53dcf31a28cb1b38e4303/raw/85e83c6f716fb1ccba39cb88520d0c03f54d9f3e/config.json",
+        ".config/fttb/config.json")
+
+
 if args.action == "list":
     list_all(args.ide)
 elif args.action == "search":
@@ -218,9 +243,10 @@ elif args.action == "use":
     use(args.ide, args.version)
     generate_entry(args.ide, args.version)
 elif args.action == "config":
-    os.makedirs(".config/fttb")
-    os.makedirs("bin")
+    create_config()
+elif args.action == "clear":
+    try:
+        shutil.rmtree(".cache/fttb")
+    except FileNotFoundError:
+        pass
     os.makedirs(".cache/fttb")
-    os.makedirs("goinfre/ides/fttb")
-    download_file("https://gist.githubusercontent.com/BenoitRoux0/16b18e10cfd53dcf31a28cb1b38e4303/raw/85e83c6f716fb1ccba39cb88520d0c03f54d9f3e/config.json", ".config/fttb/config.json")
-
