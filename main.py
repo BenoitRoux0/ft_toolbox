@@ -10,7 +10,7 @@ import shutil
 
 parser = argparse.ArgumentParser(description='Jetbrains toolbox cli')
 
-parser.add_argument("action", choices=['list', 'search', 'infos', 'download', 'use', 'config', 'clear'])
+parser.add_argument("action", choices=['list', 'search', 'infos', 'download', 'use', 'config', 'clear', 'remove'])
 parser.add_argument("ide", nargs='?', default='all')
 parser.add_argument("version", nargs='?', default="latest")
 parser.add_argument("cmd", nargs='?')
@@ -34,7 +34,6 @@ except FileNotFoundError:
 
 
 def get_code(name, config_fttp: dict):
-    print(config_fttp['aliases'])
     if name in config_fttp.values():
         return name
     if name in config_fttp['aliases'].keys():
@@ -63,8 +62,9 @@ def download_file(url, dst):
 
 def list_all(ide):
     if ide == "all":
+        codes = ",".join(config_fttb['aliases'].values())
         res = requests.get(
-            "https://data.services.jetbrains.com/products?fields=name,intellijProductCode,description,categories")
+            f"https://data.services.jetbrains.com/products?fields=name,intellijProductCode,description,categories&code={codes}")
 
         if not res.ok:
             print("request failed")
@@ -75,9 +75,8 @@ def list_all(ide):
         for ide in ides:
             if ide['intellijProductCode'] is not None and ide['categories'] is not None:
                 if "IDE" in ide['categories']:
-                    print(f"{ide['name']}\ncode: {ide['intellijProductCode']}\n{ide['description']}\n")
+                    print(f"{ide['name']}\n\n{ide['description']}\n")
     else:
-        print(f"print details about {ide}")
         res = requests.get(
             f"https://data.services.jetbrains.com/products/releases?code={ide}")
 
@@ -88,8 +87,6 @@ def list_all(ide):
         releases = res.json()[ide][::-1]
 
         for release in releases:
-            print(release.keys())
-            print(release['date'])
             if release['notesLink'] is not None:
                 print('\x1b]8;;' + release['notesLink'] + '\x1b\\' + release['version'] + '\x1b]8;;\x1b\\')
             else:
@@ -117,7 +114,6 @@ def search(query):
 
 
 def infos(ide):
-    print(f"print details about {ide}")
     ide = get_code(ide, config_fttb)
     res = requests.get(
         f"https://data.services.jetbrains.com/products?fields=name,intellijProductCode,description,categories&code={ide}")
@@ -135,36 +131,40 @@ def infos(ide):
 
 def get_latest(ide):
     res = requests.get(
-        f"https://data.services.jetbrains.com/products/releases?code={ide}")
+        f"https://data.services.jetbrains.com/products?code={ide}&fields=releases")
     if not res.ok:
         print("request failed")
         sys.exit()
 
-    releases = res.json()[ide]
+    releases = res.json()[0]['releases']
+    for release in releases:
+        if release["type"] == "release":
+            return release['version']
     return releases[0]['version']
 
 
-def download(ide, version, config_fttp: dict):
+def download(ide, version):
     if ide == "all":
         print("invalid IDE code")
         return
     ide = get_code(ide, config_fttb)
     res = requests.get(
-        f"https://data.services.jetbrains.com/products/releases?code={ide}")
+        f"https://data.services.jetbrains.com/products?code={ide}&fields=releases")
     if not res.ok:
         print("request failed")
         sys.exit()
 
-    print(res.json().keys())
-    releases = res.json()[ide]
+    releases = res.json()[0]['releases']
     if version == "latest":
-        version = releases[0]['version']
+        for release in releases:
+            if release["type"] == "release":
+                version = release['version']
+                break
 
     if os.path.isdir(f"goinfre/ides/fttb/{ide}-{version}"):
         return version
     for release in releases:
         if release['version'] == version:
-            print(release['downloads']['linux'])
             filename = release['downloads']['linux']['link'].split("/")[-1]
             filepath = f".cache/fttb/{filename}"
             download_file(release['downloads']['linux']['link'], filepath)
@@ -177,17 +177,6 @@ def download(ide, version, config_fttp: dict):
                 pass
             os.rename(f"goinfre/ides/fttb/{dst}", f"goinfre/ides/fttb/{ide}-{version}")
             return version
-
-
-def use(ide, version):
-    version = download(ide, version, config_fttb)
-    print(version)
-    try:
-        os.remove(f"bin/{ide}")
-    except FileNotFoundError:
-        pass
-    ide_code = get_code(ide, config_fttb)
-    os.symlink(f"{os.getcwd()}/goinfre/ides/fttb/{ide_code}-{version}/bin/{ide}.sh", f"bin/{ide}")
 
 
 def generate_entry(ide, version):
@@ -206,7 +195,16 @@ def generate_entry(ide, version):
     entry_file = open(f".local/share/applications/{ide}.desktop", "w+")
     entry_file.write(entry)
     entry_file.close()
-    print(res.json())
+    try:
+        os.remove(f"bin/{ide}")
+    except FileNotFoundError:
+        pass
+    os.symlink(f"{os.getcwd()}/goinfre/ides/fttb/{ide_code}-{version}/bin/{ide}.sh", f"bin/{ide}")
+
+
+def use(ide, version):
+    download(ide, version)
+    generate_entry(ide, version)
 
 
 def create_config():
@@ -231,6 +229,35 @@ def create_config():
         ".config/fttb/config.json")
 
 
+def remove(ide, version):
+    if ide == "all":
+        print("invalid IDE code")
+        return
+    ide_code = get_code(ide, config_fttb)
+    res = requests.get(
+        f"https://data.services.jetbrains.com/products?code={ide_code}&fields=releases")
+    if not res.ok:
+        print("request failed")
+        sys.exit()
+
+    releases = res.json()[0]['releases']
+    if version == "latest":
+        for release in releases:
+            if release["type"] == "release":
+                version = release['version']
+                break
+
+    try:
+        shutil.rmtree(f"goinfre/ides/fttb/{ide_code}-{version}")
+    except FileNotFoundError:
+        pass
+    if not os.path.exists(f"bin/{ide}"):
+        try:
+            os.remove(f"bin/{ide}")
+        except FileNotFoundError:
+            pass
+
+
 if args.action == "list":
     list_all(args.ide)
 elif args.action == "search":
@@ -238,7 +265,7 @@ elif args.action == "search":
 elif args.action == "infos":
     infos(args.ide)
 elif args.action == "download":
-    download(args.ide, args.version, config_fttb)
+    download(args.ide, args.version)
 elif args.action == "use":
     use(args.ide, args.version)
     generate_entry(args.ide, args.version)
@@ -250,3 +277,5 @@ elif args.action == "clear":
     except FileNotFoundError:
         pass
     os.makedirs(".cache/fttb")
+elif args.action == "remove":
+    remove(args.ide, args.version)
