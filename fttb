@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(description='Jetbrains toolbox cli')
 parser.add_argument("action", choices=['list', 'search', 'infos', 'download', 'use', 'config', 'clear', 'remove'])
 parser.add_argument("ide", nargs='?', default='all')
 parser.add_argument("version", nargs='?', default="latest")
-parser.add_argument("cmd", nargs='?')
+parser.add_argument("--type", choices=["release", "eap"], default="release")
 
 os.chdir(os.environ.get("HOME", "./"))
 
@@ -31,6 +31,25 @@ try:
 except FileNotFoundError:
     if args.action != "config":
         print("run with config firstly")
+
+
+def parse_version(ide, version, type):
+    print("get latest")
+    print("request")
+    res = requests.get(
+        f"https://data.services.jetbrains.com/products?code={ide}&fields=releases")
+    if not res.ok:
+        print("request failed")
+        sys.exit()
+
+    releases = res.json()[0]['releases']
+    for release in releases:
+        if release["type"] == type:
+            return release['version']
+
+
+def get_releases(ide_code, version, type):
+    pass
 
 
 def get_code(name, config_fttp: dict):
@@ -129,20 +148,6 @@ def infos(ide):
     print(f"{ide['name']}\ncode: {ide['intellijProductCode']}\n{ide['description']}\n")
 
 
-def get_latest(ide):
-    res = requests.get(
-        f"https://data.services.jetbrains.com/products?code={ide}&fields=releases")
-    if not res.ok:
-        print("request failed")
-        sys.exit()
-
-    releases = res.json()[0]['releases']
-    for release in releases:
-        if release["type"] == "release":
-            return release['version']
-    return releases[0]['version']
-
-
 def download(ide, version):
     if ide == "all":
         print("invalid IDE code")
@@ -155,16 +160,12 @@ def download(ide, version):
         sys.exit()
 
     releases = res.json()[0]['releases']
-    if version == "latest":
-        for release in releases:
-            if release["type"] == "release":
-                version = release['version']
-                break
+    version = parse_version(ide, args.type)
 
     if os.path.isdir(f"goinfre/ides/fttb/{ide}-{version}"):
         return version
     for release in releases:
-        if release['version'] == version:
+        if release['version'] == version and release['type'] == args.type:
             filename = release['downloads']['linux']['link'].split("/")[-1]
             filepath = f".cache/fttb/{filename}"
             download_file(release['downloads']['linux']['link'], filepath)
@@ -177,12 +178,14 @@ def download(ide, version):
                 pass
             os.rename(f"goinfre/ides/fttb/{dst}", f"goinfre/ides/fttb/{ide}-{version}")
             return version
+    raise Exception
 
 
 def generate_entry(ide, version):
     ide_code = get_code(ide, config_fttb)
     if version == "latest":
         version = get_latest(ide_code)
+    version = parse_version(ide_code, args.type)
     res = requests.get(
         f"https://data.services.jetbrains.com/products?code={ide_code}&fields=name,intellijProductCode,description,categories")
     template_file_res = requests.get(
@@ -203,6 +206,8 @@ def generate_entry(ide, version):
 
 
 def use(ide, version):
+    ide_code = get_code(ide, config_fttb)
+    version = parse_version(ide_code, args.type)
     download(ide, version)
     generate_entry(ide, version)
 
@@ -268,7 +273,6 @@ elif args.action == "download":
     download(args.ide, args.version)
 elif args.action == "use":
     use(args.ide, args.version)
-    generate_entry(args.ide, args.version)
 elif args.action == "config":
     create_config()
 elif args.action == "clear":
