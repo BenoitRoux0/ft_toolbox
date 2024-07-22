@@ -42,10 +42,12 @@ def parse_version(ide, version, type):
         print("request failed")
         sys.exit()
 
-    releases = res.json()[0]['releases']
-    for release in releases:
-        if release["type"] == type:
-            return release['version']
+    if version == "latest":
+        releases = res.json()[0]['releases']
+        for release in releases:
+            if release["type"] == type:
+                return release['version']
+    return version
 
 
 def get_releases(ide_code, version, type):
@@ -161,6 +163,7 @@ def download(ide, version):
 
     releases = res.json()[0]['releases']
     version = parse_version(ide, args.type)
+    version = parse_version(ide, args.version, args.type)
 
     if os.path.isdir(f"goinfre/ides/fttb/{ide}-{version}"):
         return version
@@ -186,6 +189,7 @@ def generate_entry(ide, version):
     if version == "latest":
         version = get_latest(ide_code)
     version = parse_version(ide_code, args.type)
+    version = parse_version(ide_code, args.version, args.type)
     res = requests.get(
         f"https://data.services.jetbrains.com/products?code={ide_code}&fields=name,intellijProductCode,description,categories")
     template_file_res = requests.get(
@@ -207,7 +211,7 @@ def generate_entry(ide, version):
 
 def use(ide, version):
     ide_code = get_code(ide, config_fttb)
-    version = parse_version(ide_code, args.type)
+    version = parse_version(ide_code, args.version, args.type)
     download(ide, version)
     generate_entry(ide, version)
 
