@@ -19,6 +19,9 @@ dependencies = [
 [project.entry-points.'fttb.fttb']
 fttb = "main"
 
+[project.scripts]
+fttb = "fttb:main"
+
 [project.urls]
 Homepage = "https://github.com/BenoitRoux0/fttb"
 Issues = "https://github.com/BenoitRoux0/fttb/issues"
