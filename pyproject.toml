@@ -1,0 +1,24 @@
+[project]
+name = "fttb"
+version = "0.0.1"
+authors = [
+  { name="Benoit Roux", email="42benoit.roux@gmail.com" },
+]
+description = "CLI for jetbrains tools"
+requires-python = ">=3"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests",
+    "argparse"
+]
+
+[project.entry-points.'fttb.fttb']
+fttb = "main"
+
+[project.urls]
+Homepage = "https://github.com/BenoitRoux0/fttb"
+Issues = "https://github.com/BenoitRoux0/fttb/issues"
