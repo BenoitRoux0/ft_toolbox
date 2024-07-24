@@ -28,7 +28,7 @@ def remove_cmd(args, config_fttb):
     if args.version == "all":
         return remove_all_versions(args, config_fttb)
     ide_code = get_code(args.ide, config_fttb)
-    print("request")
+    
     res = requests.get(
         f"https://data.services.jetbrains.com/products?code={ide_code}&fields=releases")
     if not res.ok:

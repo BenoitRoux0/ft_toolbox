@@ -12,7 +12,6 @@ def set_infos_parser(parser: ArgumentParser):
 
 def infos_cmd(args, config_fttb):
     ide = get_code(args.ide, config_fttb)
-    print("request")
     res = requests.get(
         f"https://data.services.jetbrains.com/products?fields=name,intellijProductCode,description,categories&code={ide}"
     )

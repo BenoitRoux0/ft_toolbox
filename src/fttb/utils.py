@@ -17,8 +17,6 @@ def get_latest(ide, version_type: str | None, releases):
 
 
 def parse_version(ide, version, version_type: str | None):
-    print("get latest")
-    print("request")
     res = requests.get(
         f"https://data.services.jetbrains.com/products?code={ide}&fields=releases")
     if not res.ok:
@@ -50,7 +48,7 @@ def get_code(name, config_fttp: dict):
 
 def download_file(url, dst):
     with open(dst, "wb") as f:
-        print("request")
+        
         response = requests.get(url, stream=True)
         total_length = response.headers.get('content-length')
 

@@ -7,13 +7,12 @@ from .cmds.remove import remove_cmd, set_remove_parser
 from .cmds.clear import clear_cmd
 from .cmds.infos import set_infos_parser, infos_cmd
 from .cmds.use import use_cmd, set_use_parser
-from .cmds.download import download_ide, set_download_parser, download_cmd
+from .cmds.download import set_download_parser, download_cmd
 from .cmds.list import list_cmd, set_list_parser
-from .utils import parse_version, VersionError, open_config, get_code, download_file, create_config
+from .utils import open_config, create_config
 
 parser = argparse.ArgumentParser(description='Jetbrains toolbox cli', prog="fttb")
 
-# parser.add_argument("action", choices=['search', 'infos', 'download', 'use', 'config', 'clear', 'remove'])
 subparsers = parser.add_subparsers(dest="command")
 list_parser = subparsers.add_parser('list', help='list ides')
 set_list_parser(list_parser)
@@ -26,9 +25,6 @@ set_infos_parser(infos_parser)
 remove_parser = subparsers.add_parser('remove', help='remove an ide')
 set_remove_parser(remove_parser)
 subparsers.add_parser('clear', help='clear download cache')
-# parser.add_argument("ide", nargs='?', default='all')
-# parser.add_argument("version", nargs='?', default="latest")
-# parser.add_argument("--type", choices=["release", "eap"], default="release")
 
 os.chdir(os.environ.get("HOME", "./"))
 
@@ -39,7 +35,6 @@ def main():
     create_config()
     config_fttb = open_config(".config/fttb/config.json")
     if args.command == "list":
-        print("list")
         list_cmd(args, config_fttb)
     elif args.command == "download":
         download_cmd(args, config_fttb)

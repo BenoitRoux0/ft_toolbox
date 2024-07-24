@@ -9,10 +9,8 @@ def set_list_parser(parser: ArgumentParser):
 
 
 def list_cmd(args, config_fttb):
-    print(args.ide)
     if args.ide == "all":
         codes = ",".join(config_fttb['aliases'].values())
-        print("request")
         res = requests.get(
             f"https://data.services.jetbrains.com/products?fields=name,intellijProductCode,description,categories&code={codes}")
 

@@ -15,10 +15,10 @@ def set_use_parser(parser: ArgumentParser):
 
 def generate_entry(ide, ide_code, version, type):
     version = parse_version(ide_code, version, type)
-    print("request")
+    
     res = requests.get(
         f"https://data.services.jetbrains.com/products?code={ide_code}&fields=name,intellijProductCode,description,categories")
-    print("request")
+    
     template_file_res = requests.get(
         "https://gist.githubusercontent.com/BenoitRoux0/ece685d71749e9d52a1c03b09a5b6e74/raw/dd5bd0f2a2f24c157a26aa7c97121f883dd6eeef/template.desktop")
     entry = template_file_res.content.decode()

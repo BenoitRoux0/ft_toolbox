@@ -17,17 +17,14 @@ def set_download_parser(parser: ArgumentParser):
 
 def download_ide(ide, version, type, config_fttb):
     ide_code = get_code(ide, config_fttb)
-    print("request")
     res = requests.get(
         f"https://data.services.jetbrains.com/products?code={ide_code}&fields=releases"
     )
     if not res.ok:
-        print("request failed")
         sys.exit()
 
     releases = res.json()[0]['releases']
     version = parse_version(ide_code, version, type)
-    print(version)
 
     if os.path.isdir(f"goinfre/ides/fttb/{ide_code}-{version}"):
         return version
