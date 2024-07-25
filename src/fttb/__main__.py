@@ -3,6 +3,7 @@ import os
 
 import argparse
 
+from .cmds.config import set_config_parser, config_cmd
 from .cmds.remove import remove_cmd, set_remove_parser
 from .cmds.clear import clear_cmd
 from .cmds.infos import set_infos_parser, infos_cmd
@@ -24,6 +25,8 @@ infos_parser = subparsers.add_parser('infos', help='get infos about an ide')
 set_infos_parser(infos_parser)
 remove_parser = subparsers.add_parser('remove', help='remove an ide')
 set_remove_parser(remove_parser)
+config_parser = subparsers.add_parser('config', help='config fttb')
+set_config_parser(config_parser)
 subparsers.add_parser('clear', help='clear download cache')
 
 
@@ -42,6 +45,8 @@ def main(cmd_args):
         clear_cmd(config_fttb)
     elif cmd_args.command == "remove":
         remove_cmd(cmd_args, config_fttb)
+    elif cmd_args.command == "config":
+        config_cmd(cmd_args)
 
 
 if __name__ == '__main__':
