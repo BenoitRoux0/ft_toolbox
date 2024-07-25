@@ -1,7 +1,6 @@
-import json
 import os
 from argparse import ArgumentParser
-from ..utils import download_file, open_config
+from ..utils import open_config
 
 
 def set_config_parser(parser: ArgumentParser):

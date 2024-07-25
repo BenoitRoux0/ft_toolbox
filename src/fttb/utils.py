@@ -9,6 +9,23 @@ class VersionError(Exception):
     pass
 
 
+def get_all_versions(ide_code):
+    versions_list: dict
+    if os.path.exists(f"/tmp/fttb/{ide_code}-versions.json"):
+        with open(f"/tmp/fttb/{ide_code}-versions.json", "r") as cache_file:
+            return json.load(cache_file)
+
+    res = requests.get(
+        f"https://data.services.jetbrains.com/products?code={ide_code}&fields=releases")
+    if not res.ok:
+        print("request failed")
+        sys.exit()
+    releases = res.json()[0]['releases']
+    with open(f"/tmp/fttb/{ide_code}-versions.json", "w+") as cache_file:
+        json.dump(releases, cache_file)
+    return releases
+
+
 def get_latest(ide, version_type: str | None, releases):
     for release in releases:
         if version_type is None or release["type"] == version_type:
@@ -16,16 +33,10 @@ def get_latest(ide, version_type: str | None, releases):
     raise VersionError
 
 
-def parse_version(ide, version, version_type: str | None):
-    res = requests.get(
-        f"https://data.services.jetbrains.com/products?code={ide}&fields=releases")
-    if not res.ok:
-        print("request failed")
-        sys.exit()
-
-    releases = res.json()[0]['releases']
+def parse_version(ide_code, version, version_type: str | None):
+    releases = get_all_versions(ide_code)
     if version == "latest":
-        return get_latest(ide, version_type, releases)
+        return get_latest(ide_code, version_type, releases)
     for release in releases:
         if release['version'] == version and (version_type is None or release["type"] == version_type):
             return version
@@ -95,5 +106,9 @@ def create_config():
         pass
     try:
         os.makedirs(config_fttb['install_path'])
+    except FileExistsError:
+        pass
+    try:
+        os.makedirs("/tmp/fttb")
     except FileExistsError:
         pass

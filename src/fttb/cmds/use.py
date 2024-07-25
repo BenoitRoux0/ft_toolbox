@@ -10,17 +10,36 @@ from ..utils import get_code, parse_version, VersionError
 def set_use_parser(parser: ArgumentParser):
     parser.add_argument("ide", nargs="?", default="all")
     parser.add_argument("version", nargs='?', default="latest")
-    parser.add_argument("--type", choices=["release", "eap", "rc"], default="release")
+    parser.add_argument("--type", dest="type", choices=["release", "eap", "rc"], default="release")
+
+
+def is_used(ide, ide_code, version, type, config_fttb):
+    if not os.path.exists(f"{config_fttb['bin_path']}/{ide}") or \
+            not os.path.exists(f"{os.getenv('HOME')}/.local/share/applications/{ide}.desktop"):
+        return False
+    if not os.path.realpath(
+            f"{config_fttb['bin_path']}/{ide}") != f"{config_fttb['install_path']}/{ide_code}-{version}/bin/{ide}.sh":
+        return False
+    with open(f"{os.getenv('HOME')}/.local/share/applications/{ide}.desktop", "r") as entry_file:
+        for line in entry_file:
+            if line.startswith("Exec="):
+                if not version in line:
+                    return False
+    return True
 
 
 def generate_entry(ide, ide_code, version, type, config_fttb):
-    version = parse_version(ide_code, version, type)
-    
+    if is_used(ide, ide_code, version, type, config_fttb):
+        print("already used")
+        return
     res = requests.get(
-        f"https://data.services.jetbrains.com/products?code={ide_code}&fields=name,intellijProductCode,description,categories")
-    
+        "https://data.services.jetbrains.com/products?"
+        f"code={ide_code}&"
+        "fields=name,intellijProductCode,description,categories")
+
     template_file_res = requests.get(
-        "https://gist.githubusercontent.com/BenoitRoux0/ece685d71749e9d52a1c03b09a5b6e74/raw/dd5bd0f2a2f24c157a26aa7c97121f883dd6eeef/template.desktop")
+        "https://gist.githubusercontent.com/BenoitRoux0/ece685d71749e9d52a1c03b09a5b6e74/raw"
+        "/dd5bd0f2a2f24c157a26aa7c97121f883dd6eeef/template.desktop")
     entry = template_file_res.content.decode()
     entry = entry.replace(
         "{name}",
@@ -55,5 +74,5 @@ def use_cmd(args, config_fttb):
     except VersionError:
         print("bad version")
         return
-    download_ide(args.ide, version, args.type, config_fttb)
+    download_ide(ide_code, version, args.type, config_fttb)
     generate_entry(args.ide, ide_code, version, args.type, config_fttb)
