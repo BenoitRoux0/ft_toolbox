@@ -1,6 +1,6 @@
 [project]
 name = "fttb"
-version = "0.0.1"
+version = "1.0.0"
 authors = [
   { name="Benoit Roux", email="42benoit.roux@gmail.com" },
 ]
@@ -12,15 +12,14 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "requests",
-    "argparse"
+    "requests"
 ]
 
 [project.entry-points.'fttb.fttb']
 fttb = "main"
 
 [project.scripts]
-fttb = "fttb:main"
+fttb = "fttb:fttb.main"
 
 [project.urls]
 Homepage = "https://github.com/BenoitRoux0/fttb"

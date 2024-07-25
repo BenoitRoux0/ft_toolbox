@@ -48,7 +48,6 @@ def get_code(name, config_fttp: dict):
 
 def download_file(url, dst):
     with open(dst, "wb") as f:
-        
         response = requests.get(url, stream=True)
         total_length = response.headers.get('content-length')
 
@@ -67,23 +66,34 @@ def download_file(url, dst):
 
 
 def create_config():
+    config_fttb: dict
     try:
-        os.makedirs(".config/fttb")
+        os.makedirs(f"{os.getenv('HOME')}/.config/fttb")
     except FileExistsError:
         pass
-    try:
-        os.makedirs("bin")
-    except FileExistsError:
-        pass
-    try:
-        os.makedirs(".cache/fttb")
-    except FileExistsError:
-        pass
-    try:
-        os.makedirs("goinfre/ides/fttb")
-    except FileExistsError:
-        pass
-    if not os.path.exists(".config/fttb/config.json"):
+    if not os.path.exists(f"{os.getenv('HOME')}/.config/fttb/config.json"):
         download_file(
-            "https://gist.githubusercontent.com/BenoitRoux0/16b18e10cfd53dcf31a28cb1b38e4303/raw/85e83c6f716fb1ccba39cb88520d0c03f54d9f3e/config.json",
-            ".config/fttb/config.json")
+            "https://gist.githubusercontent.com/BenoitRoux0/16b18e10cfd53dcf31a28cb1b38e4303/raw"
+            "/676f61b08f669dffda5f60a9f54fb3cc1eb18542/config.json",
+            f"{os.getenv('HOME')}/.config/fttb/config.json")
+        config_fttb = open_config(f"{os.getenv('HOME')}/.config/fttb/config.json")
+        config_fttb['cache_path'] = f"{os.getenv('HOME')}/.cache/fttb"
+        config_fttb['install_path'] = f"{os.getenv('HOME')}/goinfre/ides/fttb"
+        config_fttb['bin_path'] = f"{os.getenv('HOME')}/bin"
+        with open(f"{os.getenv('HOME')}/.config/fttb/config.json", "w") as conf_file:
+            json.dump(config_fttb, conf_file)
+        print(config_fttb)
+    else:
+        config_fttb = open_config(f"{os.getenv('HOME')}/.config/fttb/config.json")
+    try:
+        os.makedirs(config_fttb['bin_path'])
+    except FileExistsError:
+        pass
+    try:
+        os.makedirs(config_fttb['cache_path'])
+    except FileExistsError:
+        pass
+    try:
+        os.makedirs(config_fttb['install_path'])
+    except FileExistsError:
+        pass

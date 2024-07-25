@@ -26,27 +26,27 @@ remove_parser = subparsers.add_parser('remove', help='remove an ide')
 set_remove_parser(remove_parser)
 subparsers.add_parser('clear', help='clear download cache')
 
-os.chdir(os.environ.get("HOME", "./"))
 
-args = parser.parse_args()
-
-
-def main():
+def main(cmd_args):
     create_config()
-    config_fttb = open_config(".config/fttb/config.json")
-    if args.command == "list":
-        list_cmd(args, config_fttb)
-    elif args.command == "download":
-        download_cmd(args, config_fttb)
-    elif args.command == "use":
-        use_cmd(args, config_fttb)
-    elif args.command == "infos":
-        infos_cmd(args, config_fttb)
-    elif args.command == "clear":
-        clear_cmd()
-    elif args.command == "remove":
-        remove_cmd(args, config_fttb)
+    config_fttb = open_config(f"{os.getenv('HOME')}/.config/fttb/config.json")
+    if cmd_args.command == "list":
+        list_cmd(cmd_args, config_fttb)
+    elif cmd_args.command == "download":
+        download_cmd(cmd_args, config_fttb)
+    elif cmd_args.command == "use":
+        use_cmd(cmd_args, config_fttb)
+    elif cmd_args.command == "infos":
+        infos_cmd(cmd_args, config_fttb)
+    elif cmd_args.command == "clear":
+        clear_cmd(config_fttb)
+    elif cmd_args.command == "remove":
+        remove_cmd(cmd_args, config_fttb)
 
 
 if __name__ == '__main__':
-    main()
+    args = parser.parse_args()
+    if os.environ.get("HOME", None) is None:
+        print("HOME is unset")
+        exit()
+    main(args)

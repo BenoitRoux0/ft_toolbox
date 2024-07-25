@@ -2,9 +2,9 @@ import os
 import shutil
 
 
-def clear_cmd():
+def clear_cmd(config_fttb):
     try:
-        shutil.rmtree(".cache/fttb")
+        shutil.rmtree(config_fttb['cache_path'])
     except FileNotFoundError:
         pass
-    os.makedirs(".cache/fttb")
+    os.makedirs(config_fttb['cache_path'])
