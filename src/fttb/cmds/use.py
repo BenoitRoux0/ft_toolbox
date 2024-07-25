@@ -30,7 +30,6 @@ def is_used(ide, ide_code, version, type, config_fttb):
 
 def generate_entry(ide, ide_code, version, type, config_fttb):
     if is_used(ide, ide_code, version, type, config_fttb):
-        print("already used")
         return
     res = requests.get(
         "https://data.services.jetbrains.com/products?"

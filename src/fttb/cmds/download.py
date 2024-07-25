@@ -17,7 +17,6 @@ def set_download_parser(parser: ArgumentParser):
 
 def download_ide(ide_code, version, type, config_fttb):
     if os.path.isdir(f"{config_fttb['install_path']}/{ide_code}-{version}"):
-        print("already downloaded")
         return version
     res = requests.get(
         f"https://data.services.jetbrains.com/products?code={ide_code}&fields=releases"
