@@ -9,10 +9,28 @@ class VersionError(Exception):
     pass
 
 
+def get_versions_list() -> list[str]:
+    with open("/tmp/fttb/versions.list", "r") as list_file:
+        return list_file.read().splitlines()
+
+
+def save_versions_list(ide_code):
+    with open("/tmp/fttb/versions.list", "a") as _:
+        pass
+    with open("/tmp/fttb/versions.list", "r") as list_file:
+        ides = list_file.read().splitlines()
+    if ide_code in ides:
+        return
+    ides.append(ide_code)
+    with open("/tmp/fttb/versions.list", "w") as list_file:
+        list_file.write("\n".join(ides))
+
+
 def get_all_versions(ide_code):
     versions_list: dict
     if os.path.exists(f"/tmp/fttb/{ide_code}-versions.json"):
         with open(f"/tmp/fttb/{ide_code}-versions.json", "r") as cache_file:
+            save_versions_list(ide_code)
             return json.load(cache_file)
 
     res = requests.get(
@@ -23,6 +41,7 @@ def get_all_versions(ide_code):
     releases = res.json()[0]['releases']
     with open(f"/tmp/fttb/{ide_code}-versions.json", "w+") as cache_file:
         json.dump(releases, cache_file)
+    save_versions_list(ide_code)
     return releases
 
 
