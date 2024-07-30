@@ -17,7 +17,9 @@ def list_cmd(args, config_fttb):
     if args.ide == "all":
         codes = ",".join(config_fttb['aliases'].values())
         res = requests.get(
-            f"https://data.services.jetbrains.com/products?fields=name,intellijProductCode,description,categories&code={codes}")
+            f"https://data.services.jetbrains.com/products?"
+            f"fields=name,intellijProductCode,description,categories&"
+            f"code={codes}")
 
         if not res.ok:
             print("request failed")

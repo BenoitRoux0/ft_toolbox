@@ -8,6 +8,7 @@ def update_cmd():
     for ide_code in ides:
         try:
             os.remove(f"/tmp/fttb/{ide_code}-versions.json")
-        except FileNotFoundError: pass
+        except FileNotFoundError:
+            pass
         print(f"update {ide_code}")
         get_all_versions(ide_code)

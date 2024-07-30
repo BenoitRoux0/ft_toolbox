@@ -15,7 +15,7 @@ def set_download_parser(parser: ArgumentParser):
     parser.add_argument("--type", choices=["release", "eap", "rc"], default="release")
 
 
-def download_ide(ide_code, version, type, config_fttb):
+def download_ide(ide_code, version, version_type, config_fttb):
     if os.path.isdir(f"{config_fttb['install_path']}/{ide_code}-{version}"):
         return version
     res = requests.get(
@@ -29,7 +29,7 @@ def download_ide(ide_code, version, type, config_fttb):
     if os.path.isdir(f"{config_fttb['install_path']}/{ide_code}-{version}"):
         return version
     for release in releases:
-        if release['version'] == version and release['type'] == type:
+        if release['version'] == version and release['type'] == version_type:
             filename = release['downloads']['linux']['link'].split("/")[-1]
             filepath = f"{config_fttb['cache_path']}/{filename}"
             download_file(release['downloads']['linux']['link'], filepath)

@@ -13,7 +13,7 @@ def set_use_parser(parser: ArgumentParser):
     parser.add_argument("--type", dest="type", choices=["release", "eap", "rc"], default="release")
 
 
-def is_used(ide, ide_code, version, type, config_fttb):
+def is_used(ide, ide_code, version, config_fttb):
     if not os.path.exists(f"{config_fttb['bin_path']}/{ide}") or \
             not os.path.exists(f"{os.getenv('HOME')}/.local/share/applications/{ide}.desktop"):
         return False
@@ -23,13 +23,13 @@ def is_used(ide, ide_code, version, type, config_fttb):
     with open(f"{os.getenv('HOME')}/.local/share/applications/{ide}.desktop", "r") as entry_file:
         for line in entry_file:
             if line.startswith("Exec="):
-                if not version in line:
+                if version not in line:
                     return False
     return True
 
 
-def generate_entry(ide, ide_code, version, type, config_fttb):
-    if is_used(ide, ide_code, version, type, config_fttb):
+def generate_entry(ide, ide_code, version, config_fttb):
+    if is_used(ide, ide_code, version, config_fttb):
         return
     res = requests.get(
         "https://data.services.jetbrains.com/products?"
@@ -74,4 +74,4 @@ def use_cmd(args, config_fttb):
         print("bad version")
         return
     download_ide(ide_code, version, args.type, config_fttb)
-    generate_entry(args.ide, ide_code, version, args.type, config_fttb)
+    generate_entry(args.ide, ide_code, version, config_fttb)

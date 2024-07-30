@@ -16,7 +16,7 @@ def get_versions_list() -> list[str]:
 
 def save_versions_list(ide_code):
     with open("/tmp/fttb/versions.list", "a") as _:
-        pass
+        os.chmod("/tmp/fttb/versions.list", 0o777)
     with open("/tmp/fttb/versions.list", "r") as list_file:
         ides = list_file.read().splitlines()
     if ide_code in ides:
@@ -29,6 +29,7 @@ def save_versions_list(ide_code):
 def get_all_versions(ide_code):
     versions_list: dict
     if os.path.exists(f"/tmp/fttb/{ide_code}-versions.json"):
+        os.chmod(f"/tmp/fttb/{ide_code}-versions.json", 0o777)
         with open(f"/tmp/fttb/{ide_code}-versions.json", "r") as cache_file:
             save_versions_list(ide_code)
             return json.load(cache_file)
@@ -40,12 +41,13 @@ def get_all_versions(ide_code):
         sys.exit()
     releases = res.json()[0]['releases']
     with open(f"/tmp/fttb/{ide_code}-versions.json", "w+") as cache_file:
+        os.chmod(f"/tmp/fttb/{ide_code}-versions.json", 0o777)
         json.dump(releases, cache_file)
     save_versions_list(ide_code)
     return releases
 
 
-def get_latest(ide, version_type: str | None, releases):
+def get_latest(version_type: str | None, releases):
     for release in releases:
         if version_type is None or release["type"] == version_type:
             return release['version']
@@ -55,7 +57,7 @@ def get_latest(ide, version_type: str | None, releases):
 def parse_version(ide_code, version, version_type: str | None):
     releases = get_all_versions(ide_code)
     if version == "latest":
-        return get_latest(ide_code, version_type, releases)
+        return get_latest(version_type, releases)
     for release in releases:
         if release['version'] == version and (version_type is None or release["type"] == version_type):
             return version
@@ -131,3 +133,4 @@ def create_config():
         os.makedirs("/tmp/fttb")
     except FileExistsError:
         pass
+    os.chmod("/tmp/fttb", 0o777)
