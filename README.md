@@ -1,4 +1,4 @@
-# FT_TOOLBOX  
+# ft_toolbox  
   
 ## installation  
   
