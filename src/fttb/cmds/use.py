@@ -50,7 +50,7 @@ def generate_entry(ide, ide_code, version, config_fttb):
     )
     entry = entry.replace(
         "{exec}",
-        f"{config_fttb['install_path']}/{ide_code}-{version}/bin/{ide}.sh %U"
+        f"{config_fttb['install_path']}/{ide_code}-{version}/bin/{ide} %U"
     )
     entry = entry.replace(
         "{icon}",
@@ -63,7 +63,7 @@ def generate_entry(ide, ide_code, version, config_fttb):
         os.remove(f"{config_fttb['bin_path']}/{ide}")
     except FileNotFoundError:
         pass
-    os.symlink(f"{config_fttb['install_path']}/{ide_code}-{version}/bin/{ide}.sh", f"{config_fttb['bin_path']}/{ide}")
+    os.symlink(f"{config_fttb['install_path']}/{ide_code}-{version}/bin/{ide}", f"{config_fttb['bin_path']}/{ide}")
 
 
 def use_cmd(args, config_fttb):
