@@ -31,6 +31,7 @@ config_parser = subparsers.add_parser('config', help='config fttb')
 set_config_parser(config_parser)
 subparsers.add_parser('clear', help='clear download cache')
 subparsers.add_parser('update', help='update versions lists')
+subparsers.add_parser('alias', help='add alias fttb for "python3.10 -m fttb"')
 
 
 def main(cmd_args):
