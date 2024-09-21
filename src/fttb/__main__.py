@@ -3,6 +3,7 @@ import os
 
 import argparse
 
+from .cmds.alias import create_alias
 from .cmds.update import update_cmd
 from .cmds.config import set_config_parser, config_cmd
 from .cmds.remove import remove_cmd, set_remove_parser
@@ -51,6 +52,8 @@ def main(cmd_args):
         config_cmd(cmd_args)
     elif cmd_args.command == "update":
         update_cmd()
+    elif cmd_args.command == "alias":
+        create_alias()
 
 
 if __name__ == '__main__':
