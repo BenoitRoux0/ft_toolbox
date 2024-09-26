@@ -1,17 +1,30 @@
 import os
 import sys
 
+
+def get_custom_dotfile():
+        print("Could not localised sheel dotfile\n Please provide the path to you shell config file")
+        config_file = input("Path: ")
+        if not os.path.exists(config_file):
+            print(f"{config_file} not found")
+            sys.exit(1)
+        return config_file
+
 def create_alias():
     shell_var = os.environ.get("SHELL", "")
     home_dir = os.path.expanduser("~")
 
     if "bash" in shell_var:
         config_file = os.path.join(home_dir, ".bashrc")
+        if not os.path.exists(config_file):
+            config_file = get_custom_dotfile()
     elif "zsh" in shell_var:
         config_file = os.path.join(home_dir, ".zshrc")
+        if not os.path.exists(config_file):
+            config_file = get_custom_dotfile()
     else:
-        print("Unknown shell. The 'alias' command works with bash and zsh only.")
-        sys.exit(1)
+        config_file = get_custom_dotfile()
+
 
     if not os.path.exists(config_file):
         print(f"{config_file} not found")
