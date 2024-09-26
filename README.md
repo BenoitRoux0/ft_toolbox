@@ -73,7 +73,7 @@ fttb clear
 ```
 
 ## Author
-#### Benoit Roux
+### Benoit Roux
 > Core development and project managment
 - Github: [@BenoitRoux0](https://github.com/BenoitRoux0)
 ### Guillaume d´Harcourt
