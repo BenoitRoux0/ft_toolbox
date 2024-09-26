@@ -3,7 +3,7 @@ import sys
 
 
 def get_custom_dotfile():
-        print("Could not localised sheel dotfile\n Please provide the path to you shell config file")
+        print("Could not localised shell dotfile\n Please provide the path to you shell config file")
         config_file = input("Path: ")
         if not os.path.exists(config_file):
             print(f"{config_file} not found")
