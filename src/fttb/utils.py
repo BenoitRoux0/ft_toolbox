@@ -97,6 +97,17 @@ def download_file(url, dst):
             print("")
 
 
+def download_config() -> dict[str, str]:
+    req = requests.get(url = "https://gist.githubusercontent.com/BenoitRoux0/16b18e10cfd53dcf31a28cb1b38e4303/raw/config.json")
+
+    return req.json()
+
+
+def save_config(config_fttb: dict):
+    with open(f"{os.getenv('HOME')}/.config/fttb/config.json", "w") as conf_file:
+        json.dump(config_fttb, conf_file)
+
+
 def create_config():
     config_fttb: dict
     try:
@@ -104,19 +115,14 @@ def create_config():
     except FileExistsError:
         pass
     if not os.path.exists(f"{os.getenv('HOME')}/.config/fttb/config.json"):
-        download_file(
-            "https://gist.githubusercontent.com/BenoitRoux0/16b18e10cfd53dcf31a28cb1b38e4303/raw"
-            "/676f61b08f669dffda5f60a9f54fb3cc1eb18542/config.json",
-            f"{os.getenv('HOME')}/.config/fttb/config.json")
-        config_fttb = open_config(f"{os.getenv('HOME')}/.config/fttb/config.json")
+        config_fttb = download_config()
         config_fttb['cache_path'] = f"{os.getenv('HOME')}/.cache/fttb"
         config_fttb['install_path'] = f"{os.getenv('HOME')}/goinfre/ides/fttb"
         config_fttb['bin_path'] = f"{os.getenv('HOME')}/bin"
-        with open(f"{os.getenv('HOME')}/.config/fttb/config.json", "w") as conf_file:
-            json.dump(config_fttb, conf_file)
-        print(config_fttb)
+        save_config(config_fttb)
     else:
         config_fttb = open_config(f"{os.getenv('HOME')}/.config/fttb/config.json")
+
     try:
         os.makedirs(config_fttb['bin_path'])
     except FileExistsError:
