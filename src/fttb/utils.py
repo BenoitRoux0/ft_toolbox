@@ -3,7 +3,7 @@ import os
 import sys
 
 import requests
-
+import platform
 
 class VersionError(Exception):
     pass
@@ -134,3 +134,5 @@ def create_config():
     except FileExistsError:
         pass
     os.chmod("/tmp/ft_tb", 0o777)
+
+def get_arc
