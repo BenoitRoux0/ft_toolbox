@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 
 import requests
 
-from ..utils import get_code
+from ..utils import get_code, IdeNotFoundError
 
 
 def set_infos_parser(parser: ArgumentParser):
@@ -11,7 +11,12 @@ def set_infos_parser(parser: ArgumentParser):
 
 
 def infos_cmd(args, config_fttb):
-    ide = get_code(args.ide, config_fttb)
+    try:
+        ide = get_code(args.ide, config_fttb)
+    except IdeNotFoundError:
+        print(f"{args.ide} not found")
+        return
+
     res = requests.get(
         f"https://data.services.jetbrains.com/products?"
         f"fields=name,intellijProductCode,description,categories&"

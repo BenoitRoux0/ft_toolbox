@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import requests
 
 from ..cmds.download import download_ide
-from ..utils import get_code, parse_version, VersionError
+from ..utils import get_code, parse_version, VersionError, IdeNotFoundError
 
 
 def set_use_parser(parser: ArgumentParser):
@@ -67,7 +67,12 @@ def generate_entry(ide, ide_code, version, config_fttb):
 
 
 def use_cmd(args, config_fttb):
-    ide_code = get_code(args.ide, config_fttb)
+    try:
+        ide_code = get_code(args.ide, config_fttb)
+    except IdeNotFoundError:
+        print(f"{args.ide} not found")
+        return
+
     try:
         version = parse_version(ide_code, args.version, args.type)
     except VersionError:

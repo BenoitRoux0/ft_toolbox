@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 
 import requests
 
-from ..utils import get_code, parse_version
+from ..utils import get_code, parse_version, IdeNotFoundError
 
 
 def set_remove_parser(parser: ArgumentParser):
@@ -16,7 +16,11 @@ def set_remove_parser(parser: ArgumentParser):
 
 
 def remove_all_versions(args, config_fttb):
-    ide_code = get_code(args.ide, config_fttb)
+    try:
+        ide_code = get_code(args.ide, config_fttb)
+    except IdeNotFoundError:
+        print(f"{args.ide} not found")
+        return
     for f in glob.glob(f"{config_fttb['install_path']}/{ide_code}-*"):
         shutil.rmtree(f)
 
@@ -27,8 +31,12 @@ def remove_cmd(args, config_fttb):
         return
     if args.version == "all":
         return remove_all_versions(args, config_fttb)
-    ide_code = get_code(args.ide, config_fttb)
-    
+    try:
+        ide_code = get_code(args.ide, config_fttb)
+    except IdeNotFoundError:
+        print(f"{args.ide} not found")
+        return
+
     res = requests.get(
         f"https://data.services.jetbrains.com/products?code={ide_code}&fields=releases")
     if not res.ok:

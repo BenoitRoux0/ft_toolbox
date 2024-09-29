@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 
 import requests
 
-from ..utils import get_code
+from ..utils import get_code, IdeNotFoundError
 
 
 def set_list_parser(parser: ArgumentParser):
@@ -32,7 +32,11 @@ def list_cmd(args, config_fttb):
                 if "IDE" in ide['categories']:
                     print(f"{ide['name']}\n{ide['description']}\n")
     else:
-        ide_code = get_code(args.ide, config_fttb)
+        try:
+            ide_code = get_code(args.ide, config_fttb)
+        except IdeNotFoundError:
+            print(f"{args.ide} not found")
+            return
         res = requests.get(
             f"https://data.services.jetbrains.com/products?code={ide_code}&fields=releases")
         if not res.ok:

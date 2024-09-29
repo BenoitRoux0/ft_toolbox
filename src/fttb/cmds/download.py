@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 
 import requests
 
-from ..utils import get_code, parse_version, download_file, VersionError
+from ..utils import get_code, parse_version, download_file, VersionError, IdeNotFoundError
 
 
 def set_download_parser(parser: ArgumentParser):
@@ -49,7 +49,12 @@ def download_cmd(args, config_fttb):
     if args.ide == "all":
         print("invalid IDE code")
         return
-    ide_code = get_code(args.ide, config_fttb)
+    try:
+        ide_code = get_code(args.ide, config_fttb)
+    except IdeNotFoundError:
+        print(f"{args.ide} not found")
+        return
+
     try:
         version = parse_version(ide_code, args.version, args.type)
     except VersionError:
