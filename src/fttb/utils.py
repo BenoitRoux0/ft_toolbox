@@ -9,6 +9,10 @@ class VersionError(Exception):
     pass
 
 
+class IdeNotFoundError(Exception):
+    pass
+
+
 def get_versions_list() -> list[str]:
     with open("/tmp/ft_tb/versions.list", "r") as list_file:
         return list_file.read().splitlines()
@@ -75,7 +79,7 @@ def get_code(name, config_fttp: dict):
         return name
     if name in config_fttp['aliases'].keys():
         return config_fttp['aliases'][name]
-    return name
+    raise IdeNotFoundError
 
 
 def download_file(url, dst):
