@@ -1,4 +1,5 @@
 import os
+import subprocess
 from argparse import ArgumentParser
 
 import requests
@@ -64,7 +65,7 @@ def generate_entry(ide, ide_code, version, config_fttb):
     except FileNotFoundError:
         pass
     os.symlink(f"{config_fttb['install_path']}/{ide_code}-{version}/bin/{ide}", f"{config_fttb['bin_path']}/{ide}")
-
+    subprocess.run(["update-desktop-database"], ["~/.local/share/applications"])
 
 def use_cmd(args, config_fttb):
     ide_code = get_code(args.ide, config_fttb)
