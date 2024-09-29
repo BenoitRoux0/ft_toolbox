@@ -1,3 +1,4 @@
+import glob
 import os.path
 import pydoc
 import sys
@@ -18,7 +19,7 @@ def list_cmd(args, config_fttb):
         codes = ",".join(config_fttb['aliases'].values())
         res = requests.get(
             f"https://data.services.jetbrains.com/products?"
-            f"fields=name,intellijProductCode,description,categories&"
+            f"fields=name,intellijProductCode,description,categories,code&"
             f"code={codes}")
 
         if not res.ok:
@@ -30,7 +31,11 @@ def list_cmd(args, config_fttb):
         for ide in ides:
             if ide['intellijProductCode'] is not None and ide['categories'] is not None:
                 if "IDE" in ide['categories']:
-                    print(f"{ide['name']}\n{ide['description']}\n")
+                    if args.installed:
+                        if len(glob.glob(f"{config_fttb['install_path']}/{ide['code']}-*")) != 0:
+                            print(f"{ide['name']}\n{ide['description']}\n")
+                    else:
+                        print(f"{ide['name']}\n{ide['description']}\n")
     else:
         ide_code = get_code(args.ide, config_fttb)
         res = requests.get(
